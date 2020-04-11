@@ -14,6 +14,14 @@ import org.htmlparser.util.ParserException;
 import java.util.StringTokenizer;
 import org.htmlparser.beans.LinkBean;
 import java.net.URL;
+import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream; 
+import java.io.PrintStream; 
+import java.util.Locale; 
+import java.io.IOException;
 
 
 public class Crawler
@@ -36,7 +44,8 @@ public class Crawler
                 String contents = bean.getStrings();
                 StringTokenizer st = new StringTokenizer(contents);
                 while (st.hasMoreTokens()) {
-                    result.add(st.nextToken());
+					if (!result.contains(st))
+                    	result.add(st.nextToken());
                 }
                 return result;
 			
@@ -51,7 +60,8 @@ public class Crawler
                 bean.setURL(url);
                 URL[] urls = bean.getLinks();
                 for (URL s : urls) {
-                    result.add(s.toString());
+					if (!result.contains(s))
+                    	result.add(s.toString());
                 }
                 return result;
                 
@@ -61,29 +71,36 @@ public class Crawler
 	{
 		try
 		{
-			Crawler crawler = new Crawler("http://www.cs.ust.hk/~dlee/4321/");
-
-
+			Crawler crawler = new Crawler("http://www.cse.ust.hk");
+			FileWriter crawled = new FileWriter("CrawledResults.txt");
+			
 			Vector<String> words = crawler.extractWords();		
 			
-			System.out.println("Words in "+crawler.url+":");
-			for(int i = 0; i < words.size(); i++)
-				System.out.print(words.get(i)+" ");
-			System.out.println("\n\n");
-			
-
+			System.out.println(words.size() + " Words in "+crawler.url+":");
+			crawled.write(words.size() + " Words in "+crawler.url+":\n");
+			for(int i = 0; i < words.size(); i++){
+				System.out.print(words.get(i) + " ");
+				crawled.write(words.get(i) + " ");
+			}
+			crawled.write("\n\n");
+			System.out.print("\n\n");
 	
 			Vector<String> links = crawler.extractLinks();
-			System.out.println("Links in "+crawler.url+":");
+			System.out.println(links.size() + " Links in "+crawler.url+":");
+			crawled.write(links.size() + " Links in "+crawler.url+":\n");
 			for(int i = 0; i < links.size(); i++)		
-				System.out.println(links.get(i));
-			System.out.println("");
-			
+				crawled.write(links.get(i) + "\n");
+			crawled.flush();
+			crawled.close();			
 		}
 		catch (ParserException e)
-            	{
-                	e.printStackTrace ();
-            	}
+		{
+			e.printStackTrace ();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace ();
+		}
 
 	}
 }
