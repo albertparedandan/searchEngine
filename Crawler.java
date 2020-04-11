@@ -80,7 +80,7 @@ public class Crawler
 			for(int i = 0; i < words.size(); i++){
 				crawled.write(words.get(i) + " ");
 			}
-			crawled.write("\n\n");
+			crawled.write("\n");
 	
 			// get the links from the base url
 			Vector<String> links = crawler.extractLinks();
@@ -94,7 +94,7 @@ public class Crawler
 				for(int j = 0; j < w.size(); ++j){
 					crawled.write(w.get(j) + " ");
 				}
-				crawled.write("\n\n");
+				crawled.write("\n");
 			}	
 				
 			crawled.flush();
