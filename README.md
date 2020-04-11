@@ -11,6 +11,6 @@ These instructions will help you get a local project on your machine to develop 
 * HTMLParser
 
 ## Authors
-Albert Paredandan
-C William Wijaya
-Nicky Pratama
+* Albert Paredandan
+* C William Wijaya
+* Nicky Pratama
