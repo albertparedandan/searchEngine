@@ -74,22 +74,29 @@ public class Crawler
 			Crawler crawler = new Crawler("http://www.cse.ust.hk");
 			FileWriter crawled = new FileWriter("CrawledResults.txt");
 			
+			// write words from the base url
 			Vector<String> words = crawler.extractWords();		
-			
-			System.out.println(words.size() + " Words in "+crawler.url+":");
-			crawled.write(words.size() + " Words in "+crawler.url+":\n");
+			crawled.write(crawler.url + " :\n");
 			for(int i = 0; i < words.size(); i++){
-				System.out.print(words.get(i) + " ");
 				crawled.write(words.get(i) + " ");
 			}
 			crawled.write("\n\n");
-			System.out.print("\n\n");
 	
+			// get the links from the base url
 			Vector<String> links = crawler.extractLinks();
-			System.out.println(links.size() + " Links in "+crawler.url+":");
-			crawled.write(links.size() + " Links in "+crawler.url+":\n");
-			for(int i = 0; i < links.size(); i++)		
-				crawled.write(links.get(i) + "\n");
+
+			// write words contained in each of the child links for the first 30 pages
+			for(int i = 0; i < 30; i++) {
+				crawled.write(links.get(i) + " :\n");
+				Crawler c = new Crawler(links.get(i));
+				Vector<String> w = c.extractWords();
+
+				for(int j = 0; j < w.size(); ++j){
+					crawled.write(w.get(j) + " ");
+				}
+				crawled.write("\n\n");
+			}	
+				
 			crawled.flush();
 			crawled.close();			
 		}
