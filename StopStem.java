@@ -48,17 +48,21 @@ public class StopStem
 	}
 	public static void main(String[] arg)
 	{
-		StopStem stopStem = new StopStem("stopwords.txt");
+		final String STOPWORDS = "stopwords.txt";
+		final String READ_FILE = "CrawledResults.txt";
+		final String WRITE_FILE = "CrawledResults-StopStem.txt";
+
+		StopStem stopStem = new StopStem(STOPWORDS);
            
 		try{
-			BufferedReader crawled = new BufferedReader(new FileReader("CrawledResults.txt"));
-            FileWriter result = new FileWriter("CrawledResults-StopStem.txt");
+			BufferedReader crawled = new BufferedReader(new FileReader(READ_FILE));
+            FileWriter result = new FileWriter(WRITE_FILE);
             String line;
                 while ((line = crawled.readLine()) != null) {
                     String[] words = line.split("\\s");
                     for (String w: words) {
                         if (w.contains("http")){
-                            result.write(w);
+                            result.write(w + " ");
                         }
                         else if (stopStem.isStopWord(w))
                             continue;

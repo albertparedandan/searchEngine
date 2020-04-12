@@ -69,12 +69,15 @@ public class Crawler
 	
 	public static void main (String[] args)
 	{
+		final int SIZE = 30;
+		final String BASE_URL = "http://www.cse.ust.hk";
+		final String FILE_NAME = "CrawledResults.txt";
 		try
 		{
-			Crawler crawler = new Crawler("http://www.cse.ust.hk");
-			FileWriter crawled = new FileWriter("CrawledResults.txt");
+			Crawler crawler = new Crawler(BASE_URL);
+			FileWriter crawled = new FileWriter(FILE_NAME);
 			
-			// write words from the base url
+			// write words from the BASE URL
 			Vector<String> words = crawler.extractWords();		
 			crawled.write(crawler.url + " :\n");
 			for(int i = 0; i < words.size(); i++){
@@ -85,14 +88,27 @@ public class Crawler
 			// get the links from the base url
 			Vector<String> links = crawler.extractLinks();
 
+			// write child links from the base url
+			for(int k = 0; k < SIZE; ++k){
+				crawled.write(links.get(k) + " ");
+			}
+			crawled.write("\n");
+
 			// write words contained in each of the child links for the first 30 pages
-			for(int i = 0; i < 30; i++) {
+			for(int i = 0; i < SIZE; i++) {
 				crawled.write(links.get(i) + " :\n");
 				Crawler c = new Crawler(links.get(i));
 				Vector<String> w = c.extractWords();
 
 				for(int j = 0; j < w.size(); ++j){
 					crawled.write(w.get(j) + " ");
+				}
+				crawled.write("\n");
+
+				// write child links from the children of base url
+				Vector<String> l = c.extractLinks();
+				for(int k = 0; k < l.size(); ++k){
+					crawled.write(l.get(k) + " ");
 				}
 				crawled.write("\n");
 			}	
