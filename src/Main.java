@@ -1,3 +1,4 @@
+import java.util.*;
 import java.io.*;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -7,8 +8,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Vector;
 import org.htmlparser.util.ParserException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.HttpURLConnection;
 
 public class Main
 {
@@ -26,10 +31,18 @@ public class Main
     {
         try{
 			FileWriter crawled = new FileWriter(name);
-			
-			// write words from the base url
+
+			// write data from the base url
 			Vector<String> words = crawler.extractWords();		
 			crawled.write(crawler.getUrl() + " :\n");
+				// write page size of base url
+				crawled.write(crawler.pageSize() + "\n");
+
+				// write last modified date of base url
+				crawled.write(crawler.lastModified() + "\n");
+			// 		long unixSeconds = connection.getLastModified();
+			// 		Date date = new java.util.Date(unixSeconds); 
+			// 		System.out.println("get last modified "+date);
 			for(int i = 0; i < words.size(); i++){
 				crawled.write(words.get(i) + " ");
 			}
@@ -46,8 +59,13 @@ public class Main
 
 			// write words contained in each of the child links for the first 30 pages
 			for(int i = 0; i < 30; i++) {
-				crawled.write(links.get(i) + " :\n");
+				crawled.write(links.get(i) + "\n");
 				Crawler c = new Crawler(links.get(i));
+					// write page size of base url
+					crawled.write(c.pageSize() + "\n");
+
+					// write last modified date of base url
+					crawled.write(c.lastModified() + "\n");
 				Vector<String> w = c.extractWords();
 
 				for(int j = 0; j < w.size(); ++j){
@@ -85,7 +103,7 @@ public class Main
                 while ((line = crawled.readLine()) != null) {
                     String[] words = line.split("\\s");
                     for (String w: words) {
-                        if (w.contains("http")){
+                        if (w.contains("http") || w.contains(":") || w.contains("-1")){
                             result.write(w + " ");
                         }
                         else if (stopStem.isStopWord(w))
@@ -108,6 +126,6 @@ public class Main
 	{         
             Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt");
             main.crawl("assets/CrawledResults.txt");
-            main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");
+            main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");			
 	}
 }
