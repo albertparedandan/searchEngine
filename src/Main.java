@@ -9,17 +9,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 import org.htmlparser.util.ParserException;
+import org.rocksdb.RocksDBException;  
 
 public class Main
 {
     private Crawler crawler;
     private StopStem stopStem;
+    private InvertedIndex iIndex;
 
-	public Main(String url, String stopwords)
+	public Main(String url, String stopwords, String db)
 	{
 		super();
         crawler = new Crawler(url);
 		stopStem = new StopStem(stopwords);
+        try {
+            iIndex = new InvertedIndex(db);
+        }
+        catch(RocksDBException dbe) {
+            System.err.println(dbe.toString());
+        }
 	}
 
     public void crawl(String name)
@@ -90,11 +98,17 @@ public class Main
 		{
 			System.err.println(ioe.toString());
 		}
-  }
+    }
+    
+    public void storePages(String read) {
+       iIndex.parsePages(read); 
+    }
+
 	public static void main(String[] arg)
 	{         
-            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt");
+            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", "/Users/albertpare/Codes/searchEngine/assets/db");
             main.crawl("assets/CrawledResults.txt");
             main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");
+            main.storePages("assets/CrawledResults-StopStem.txt");
 	}
 }
