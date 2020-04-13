@@ -38,6 +38,12 @@ public class Main
 			// get the links from the base url
 			Vector<String> links = crawler.extractLinks();
 
+			// write child links from the base url
+			for(int k = 0; k < 30; ++k){
+				crawled.write(links.get(k) + " ");
+			}
+			crawled.write("\n");
+
 			// write words contained in each of the child links for the first 30 pages
 			for(int i = 0; i < 30; i++) {
 				crawled.write(links.get(i) + " :\n");
@@ -46,6 +52,13 @@ public class Main
 
 				for(int j = 0; j < w.size(); ++j){
 					crawled.write(w.get(j) + " ");
+				}
+				crawled.write("\n");
+
+				// write child links from the children of base url
+				Vector<String> l = c.extractLinks();
+				for(int k = 0; k < l.size(); ++k){
+					crawled.write(l.get(k) + " ");
 				}
 				crawled.write("\n");
 			}	
@@ -73,7 +86,7 @@ public class Main
                     String[] words = line.split("\\s");
                     for (String w: words) {
                         if (w.contains("http")){
-                            result.write(w);
+                            result.write(w + " ");
                         }
                         else if (stopStem.isStopWord(w))
                             continue;
