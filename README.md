@@ -17,9 +17,10 @@ These instructions will help you get a local project on your machine to develop 
 
 ## How to compile
 1. cd to project directory
-2. move all .jar files, htmlparser files to lib directory
-3. move Porter.java files to IRUtilies folder
-4. compile the .java files to classes directory
+2. create a directory called "classes"
+3. move all .jar files, htmlparser files to lib directory
+4. move Porter.java files to IRUtilies folder
+5. compile the .java files to classes directory
 
 `javac -d classes src/StopStem.java`
 
@@ -27,5 +28,5 @@ These instructions will help you get a local project on your machine to develop 
 
 `javac -cp lib/htmlparser.jar:classes -d classes src/Main.java`
 
-5. Run the Main
-java -cp .:lib/htmlparser.jar:classes Main 
+6. Run the Main
+`java -cp .:lib/htmlparser.jar:classes Main`
