@@ -2,6 +2,7 @@
    Our crawler file
 */
 import java.util.Vector;
+import java.util.*;
 import org.htmlparser.beans.StringBean;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
@@ -14,6 +15,7 @@ import org.htmlparser.util.ParserException;
 import java.util.StringTokenizer;
 import org.htmlparser.beans.LinkBean;
 import java.net.URL;
+import java.net.HttpURLConnection;
 import java.io.*;
 import java.io.File;
 import java.io.FileWriter;
@@ -22,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream; 
 import java.util.Locale; 
 import java.io.IOException;
+
 
 
 public class Crawler
@@ -72,6 +75,21 @@ public class Crawler
                 return result;
                 
 	}
+
+	public int pageSize() throws IOException
+	{
+		HttpURLConnection connection = (HttpURLConnection) new URL(this.url).openConnection();
+		int fileLength = connection.getContentLength();
+		return fileLength;
+	}
+
+	public String lastModified() throws IOException
+	{
+		HttpURLConnection connection = (HttpURLConnection) new URL(this.url).openConnection();
+		long unixSeconds = connection.getLastModified();
+		Date date = new java.util.Date(unixSeconds); 
+		return date.toString();
+	}
 	
 	public static void main (String[] args)
 	{
@@ -82,6 +100,11 @@ public class Crawler
 		{
 			Crawler crawler = new Crawler(BASE_URL);
 			FileWriter crawled = new FileWriter(FILE_NAME);
+			Parser e = new Parser(BASE_URL);
+			System.out.println(e.getVersion());
+
+			HttpURLConnection content = (HttpURLConnection) new URL(BASE_URL).openConnection();
+			System.out.println(content.getContentLength());
 			
 			// write words from the BASE URL
 			Vector<String> words = crawler.extractWords();		
