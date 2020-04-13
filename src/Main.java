@@ -29,7 +29,7 @@ public class Main
 			
 			// write words from the base url
 			Vector<String> words = crawler.extractWords();		
-			crawled.write(crawler.url + " :\n");
+			crawled.write(crawler.getUrl() + " :\n");
 			for(int i = 0; i < words.size(); i++){
 				crawled.write(words.get(i) + " ");
 			}
@@ -90,15 +90,11 @@ public class Main
 		{
 			System.err.println(ioe.toString());
 		}
-        catch (ParserException e)
-		{
-			e.printStackTrace ();
-		}
-    }
+  }
 	public static void main(String[] arg)
 	{         
-            Main main = new Main("http://www.cse.ust.hk", "stopwords.txt");
-            main.crawl("CrawledResults.txt");
-            main.stopAndStem("CrawledResults.txt", "CrawledResults-StopStem.txt");
+            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt");
+            main.crawl("assets/CrawledResults.txt");
+            main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");
 	}
 }

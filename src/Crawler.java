@@ -31,13 +31,19 @@ public class Crawler
 	{
 		url = _url;
 	}
+
+  public String getUrl() {
+    String ret = this.url;
+    return ret;
+  }
+
 	public Vector<String> extractWords() throws ParserException
 
 	{
 		// extract words in url and return them
 		// use StringTokenizer to tokenize the result from StringBean
 		// ADD YOUR CODES HERE
-		 Vector<String> result = new Vector<String>();
+    Vector<String> result = new Vector<String>();
                 StringBean bean = new StringBean();
                 bean.setURL(url);
                 bean.setLinks(false);
