@@ -24,8 +24,9 @@
 hs_err_pid*
 
 # Project specific files
-lib/*
 rocksdb-master/*
+htmlparser1_6/*
+lib/*
 
 ### macOS ###
 # General
