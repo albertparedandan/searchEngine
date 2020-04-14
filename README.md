@@ -17,16 +17,25 @@ These instructions will help you get a local project on your machine to develop 
 
 ## How to compile
 1. cd to project directory
-2. create a directory called "classes"
-3. move all .jar files, htmlparser files to lib directory
-4. move Porter.java files to IRUtilies folder
-5. compile the .java files to classes directory
+2. create a directory called "projectdirectory/classes"
+3. create a directory "projectdirectory/assets/db"
+4. move all .jar files, (htmlparser and rocksdb) files to projectdirectory/lib directory
+5. move Porter.java files to "project_directory/IRUtilies" folder
+6. make sure to change `db_path` to your base project directory in `line:157`
+7. compile the .java files to classes directory
+`javac -cp lib/rocksdbjni-6.9.0-linux64.jar:classes -d classes src/*.java`
+8. Run the Main
+`java -cp lib/htmlparser.jar:lib/rocksdbjni-6.9.0-linux64.jar:classes Main`
 
-`javac -d classes src/StopStem.java`
+## Database Schema
+* link_to_id
+This is the database that converts the links to pageIDs. This is done so that the the spaceover head is reduced in the other databases.
 
-`javac -cp lib/htmlparser.jar -d classes src/Crawler.java`
+* page_info
+This is the database that stores the info to a parent URL, it stores title, URL, modified date, size and child links
 
-`javac -cp lib/htmlparser.jar:classes -d classes src/Main.java`
+* word_to_id
+This is the database that converts the words into their respective wordID, this again reduces space overhead
 
-6. Run the Main
-`java -cp .:lib/htmlparser.jar:classes Main`
+* word_freq
+This is the database that indexes the word frequencies for each document. It is done in an inverted index manner to make things more efficient.
