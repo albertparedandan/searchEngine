@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Vector;
 import org.htmlparser.util.ParserException;
+import org.rocksdb.RocksDBException;  
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
@@ -19,12 +20,19 @@ public class Main
 {
     private Crawler crawler;
     private StopStem stopStem;
+    private InvertedIndex iIndex;
 
-	public Main(String url, String stopwords)
+	public Main(String url, String stopwords, String db)
 	{
 		super();
         crawler = new Crawler(url);
 		stopStem = new StopStem(stopwords);
+        try {
+            iIndex = new InvertedIndex(db);
+        }
+        catch(RocksDBException dbe) {
+            System.err.println(dbe.toString());
+        }
 	}
 
     public void crawl(String name)
@@ -106,6 +114,7 @@ public class Main
 			BufferedReader crawled = new BufferedReader(new FileReader(read));
             FileWriter result = new FileWriter(name);
             String line;
+            int lineNum = 0;
                 while ((line = crawled.readLine()) != null) {
 					if (line.contains("TITLE:")){
 						result.write(line + "\n");
@@ -113,7 +122,11 @@ public class Main
 					else{
 						String[] words = line.split("\\s");
 						for (String w: words) {
-							if (w.contains("http") || w.contains(":") || w.contains("-1")){
+                            if (lineNum % 6 == 0) {
+                                // parent URL
+                                result.write(w + "");
+                            }
+                            else if (w.contains("http") || w.contains(":") || w.contains("-1")){
 								result.write(w + " ");
 							}
 							else if (stopStem.isStopWord(w))
@@ -124,6 +137,7 @@ public class Main
 						}
 						result.write("\n");
 					}   
+                lineNum++;
                 }
             result.flush();
             result.close();
@@ -132,11 +146,17 @@ public class Main
 		{
 			System.err.println(ioe.toString());
 		}
-  }
+    }
+    
+    public void storePages(String read, String read2) {
+       iIndex.parsePages(read, read2); 
+    }
+
 	public static void main(String[] arg)
 	{         
-            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt");
+            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", "/Users/albertpare/Codes/searchEngine/assets/db");
             main.crawl("assets/CrawledResults.txt");
             main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");			
+            main.storePages("assets/CrawledResults-StopStem.txt", "assets/CrawledResults.txt");
 	}
 }
