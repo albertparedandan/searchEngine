@@ -7,6 +7,7 @@ import org.htmlparser.beans.StringBean;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
+import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.filters.AndFilter;
 import org.htmlparser.filters.NodeClassFilter;
 import org.htmlparser.tags.LinkTag;
@@ -24,6 +25,12 @@ import java.io.FileOutputStream;
 import java.io.PrintStream; 
 import java.util.Locale; 
 import java.io.IOException;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.net.URLConnection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.net.MalformedURLException;
 
 
 
@@ -91,6 +98,16 @@ public class Crawler
 		return date.toString();
 	}
 	
+	public String getTitle() throws IOException, MalformedURLException, ParserException
+	{
+		Parser parser = new Parser(this.url);
+		// parser.setInputHTML(MyHTML);
+		parser.setEncoding("UTF-8");
+		NodeList nl = parser.parse(null); 
+		NodeList node_list= nl.extractAllNodesThatMatch(new TagNameFilter("title"),true);
+
+		return node_list.elementAt(0).toString();
+	}
 	public static void main (String[] args)
 	{
 		final int SIZE = 30;
