@@ -43,14 +43,16 @@ public class Main
 			// write data from the base url
 			Vector<String> words = crawler.extractWords();		
 			crawled.write(crawler.getUrl() + " :\n");
+
+				// write the title page
+				crawled.write(crawler.getTitle() + "\n");
+
 				// write page size of base url
 				crawled.write(crawler.pageSize() + "\n");
 
 				// write last modified date of base url
 				crawled.write(crawler.lastModified() + "\n");
-			// 		long unixSeconds = connection.getLastModified();
-			// 		Date date = new java.util.Date(unixSeconds); 
-			// 		System.out.println("get last modified "+date);
+
 			for(int i = 0; i < words.size(); i++){
 				crawled.write(words.get(i) + " ");
 			}
@@ -69,6 +71,10 @@ public class Main
 			for(int i = 0; i < 30; i++) {
 				crawled.write(links.get(i) + "\n");
 				Crawler c = new Crawler(links.get(i));
+
+					// write the title page
+					crawled.write(c.getTitle() + "\n");
+
 					// write page size of base url
 					crawled.write(c.pageSize() + "\n");
 
@@ -110,24 +116,27 @@ public class Main
             String line;
             int lineNum = 0;
                 while ((line = crawled.readLine()) != null) {
-                    String[] words = line.split("\\s");
-                    for (String w: words) {
-                        if (lineNum % 5 == 0) {
-                            // parent URL
-                            result.write(w + "");
-                        }
-                        else if (w.contains("http") || w.contains(":") || w.contains("-1")){
-                            // child url
-                            result.write(w + " ");
-                        }
-                        else if (stopStem.isStopWord(w))
-                            continue;
-                        else {
-                            result.write(stopStem.stem(w) + " ");                            
-                        }
-                    }
-                    result.write("\n");
-                    lineNum++;
+					if (line.contains("TITLE:")){
+						result.write(line + "\n");
+					}
+					else{
+						String[] words = line.split("\\s");
+						for (String w: words) {
+                            if (lineNum % 6 = 0) {
+                                // parent URL
+                                result.write(w + "");
+                            }
+                            else if (w.contains("http") || w.contains(":") || w.contains("-1")){
+								result.write(w + " ");
+							}
+							else if (stopStem.isStopWord(w))
+								continue;
+							else {
+								result.write(stopStem.stem(w) + " ");                            
+							}
+						}
+						result.write("\n");
+					}   
                 }
             result.flush();
             result.close();
