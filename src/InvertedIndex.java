@@ -91,10 +91,10 @@ public class InvertedIndex
             String line;
             int lineNum = 0;
             while ((line = stemCrawled.readLine()) != null) {
-                if (lineNum % 5 == 3) {
+                if (lineNum % 6 == 4) {
                     // get keywords
                 }
-                else if (lineNum % 5 == 0) {
+                else if (lineNum % 6 == 0) {
                     // it's the URL
                     url = line;
                     result = line + " ";
@@ -103,7 +103,7 @@ public class InvertedIndex
                     result += line + " ";
                 }
 
-                if (lineNum % 5 == 4) {
+                if (lineNum % 6 == 5) {
                     url = this.getPageId(url);
                     this.pageInfo.put(url.getBytes(), result.getBytes());
                 }
@@ -127,10 +127,10 @@ public class InvertedIndex
             String docId = "";
             int lineNum = 0;
             while ((line = stemCrawled.readLine()) != null) {
-                if (lineNum % 5 == 0) {
+                if (lineNum % 6 == 0) {
                     docId = line;
                 }
-                else if (lineNum % 5 == 3) {
+                else if (lineNum % 6 == 4) {
                     // if the current line is the list of keywords
                     //System.out.println("docID in line 5 ==3:" + docId);
                     docId = this.getPageId(docId);
