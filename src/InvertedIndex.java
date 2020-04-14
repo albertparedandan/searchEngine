@@ -16,57 +16,55 @@ import org.rocksdb.RocksIterator;
 
 public class InvertedIndex
 {
-    private RocksDB db;
+    private RocksDB linkToId;
+    private RocksDB pageInfo;
+    private RocksDB wordToId;
+    private RocksDB wordFreq;
     private Options options;
     private String path;
-    private String linkToIdPath;
-    private String pageInfoPath;
 
     InvertedIndex(String dbPath) throws RocksDBException
     {
-        // the Options class contains a set of configurable DB options
-        // that determines the behaviour of the database.
         this.options = new Options();
         this.options.setCreateIfMissing(true);
         this.path = dbPath;
-        this.linkToIdPath = dbPath + "/" + "link_to_id";
-        this.pageInfoPath = dbPath + "/" + "page_info";
+        this.linkToId = RocksDB.open(this.options, dbPath + "/" + "link_to_id");
+        this.pageInfo = RocksDB.open(this.options, dbPath + "/" + "page_info");
+        this.wordToId = RocksDB.open(this.options, dbPath + "/" + "word_to_id");
+        this.wordFreq = RocksDB.open(this.options, dbPath + "/" + "word_freq");
     }
 
-    public void parsePages(String read) {
+    public void parsePages(String read, String read2) {
         this.linkToId(read);
+        this.collectPageInfo(read2);
+        this.parseTerms(read);
+        try{
+            System.out.println("print3");
+            this.printAll(2);
+        }
+        catch(RocksDBException dbe)
+        {
+            System.err.println(dbe.toString());
+        }
     }
 
     public void linkToId(String read) {
         // get the link name
         try{
-        db = RocksDB.open(this.options, linkToIdPath);
 			BufferedReader stemCrawled = new BufferedReader(new FileReader(read));
             String line;
             while ((line = stemCrawled.readLine()) != null) {
                 String[] words = line.split("\\s");
                 for (String w: words) {
                     if (w.contains("http")){
-                        byte[] content = this.db.get(w.getBytes());
+                        byte[] content = this.linkToId.get(w.getBytes());
                         // check if the link is already in DB
                         // if it is not, content == null
                         if (content == null) {
                             // get last pageID value first
-                            int id = this.getLastId("doc ");
+                            int id = this.getLastId(0);
                             id = id + 1;
-                            db.put(w.getBytes(), ("doc " + id).getBytes()); 
-
-                            // this also means this link does not exist in the page_info db
-                            // so insert it with the current id as key
-
-                            // first switch db
-                            db.RocksDB.open(this.options, pageInfoPath);
-                            String val = "";
-                            // need to get title etc.
-                            db.put(("doc " + id).getBytes(), val);
-                        }
-                        else {
-                            // link already in the db
+                            linkToId.put(w.getBytes(), ("doc " + id).getBytes()); 
                         }
                     }
                     else {
@@ -85,11 +83,159 @@ public class InvertedIndex
         }
     }
 
-    public int getLastId(String type) {
-        // gets the lastId of the current db, if db is empty, it will return a -1. first entry is a 0
-        // type is the regex to remove from the value 
-        // e.g "doc " is removed from value "doc 0" to get "0"
-        RocksIterator iter = db.newIterator();
+    public void collectPageInfo(String read) {
+        String result = "";
+        String url = "";
+        try {
+			BufferedReader stemCrawled = new BufferedReader(new FileReader(read));
+            String line;
+            int lineNum = 0;
+            while ((line = stemCrawled.readLine()) != null) {
+                if (lineNum % 5 == 3) {
+                    // get keywords
+                }
+                else if (lineNum % 5 == 0) {
+                    // it's the URL
+                    url = line;
+                    result = line + " ";
+                }
+                else {
+                    result += line + " ";
+                }
+
+                if (lineNum % 5 == 4) {
+                    url = this.getPageId(url);
+                    this.pageInfo.put(url.getBytes(), result.getBytes());
+                }
+                lineNum++;
+		    }
+        }
+		catch(IOException ioe)
+		{
+			System.err.println(ioe.toString());
+		}
+        catch(RocksDBException dbe)
+        {
+            System.err.println(dbe.toString());
+        }
+    }
+
+    public void parseTerms(String read) {
+        try {
+            BufferedReader stemCrawled = new BufferedReader(new FileReader(read));
+            String line = "";
+            String docId = "";
+            int lineNum = 0;
+            while ((line = stemCrawled.readLine()) != null) {
+                if (lineNum % 5 == 0) {
+                    docId = line;
+                }
+                else if (lineNum % 5 == 3) {
+                    // if the current line is the list of keywords
+                    //System.out.println("docID in line 5 ==3:" + docId);
+                    docId = this.getPageId(docId);
+                    String[] words = line.split("\\s");
+                    for (String w: words) {
+                        // check first if it already exists in the database
+                        String wordId = getWordId(w);
+                        if (wordId == "") {
+                            // insert the word first
+                            wordId = "word " + (getLastId(2) + 1);
+                            this.wordToId.put(w.getBytes(), wordId.getBytes());
+                        }
+                        // word already exists
+                        
+                        // now we can update/insert the word frequency for the given docId
+                        // check the frequency of the word for this document
+                        int freq = getWordFreq(docId, wordId);
+                        // call function to insert/update the value of docId and word freq
+                        // freq here is still the old freq so that the function can find the exact string to replace and then increment the frequency
+                        updateOrInsertWordFreq(docId, wordId, freq);
+                    }
+                }
+                lineNum++;
+            }
+        }
+        catch(IOException ioe) {
+            System.err.println(ioe.toString());
+        }
+        catch(RocksDBException dbe) {
+            System.err.println(dbe.toString());
+        }
+    }
+
+    public void updateOrInsertWordFreq(String docId, String wordId, int freq) {
+        // this function updates the word frequency for a given docId
+        // if no previous entry exists, insert it either way
+        try {
+            byte[] content = this.wordFreq.get(wordId.getBytes());
+            if (content != null) {
+                String value = new String (content);
+                if (freq == 0) {
+                    // apend the value and update
+                    value += docId + " freq " + (freq + 1) + ", ";
+                }
+                else {
+                    value = value.replaceFirst((docId + " freq " + freq + ", "), (docId + " freq " + (freq+1) + ", "));
+                }
+                this.wordFreq.put(wordId.getBytes(), value.getBytes());
+            }
+            else {
+                String value = docId + " freq " + (freq + 1) + ", ";
+                this.wordFreq.put(wordId.getBytes(), value.getBytes());
+            }
+        }
+        catch(RocksDBException dbe) {
+            System.err.println(dbe.toString());
+        }
+    }
+
+    public int getWordFreq(String docId, String wordId) {
+        try {
+            byte[] content = this.wordFreq.get(wordId.getBytes());
+            if (content != null) {
+                String value = "" + new String(content);
+                String find = docId + " freq ";
+                int i = value.indexOf(find);
+                if (i > -1) {
+                    // found
+                    i += find.length();
+                    int j = value.indexOf(",", i);
+                    value = value.substring(i, j);
+                    int answer = Integer.parseInt(value);
+                    return answer;
+                }
+            }
+            // TODO handle if wordId does not even exists in wordFreq
+            else {
+                return 0;
+            }
+        }
+        catch(RocksDBException dbe) {
+            System.err.println(dbe.toString());
+        }
+        return 0;
+    }
+
+    public int getLastId(int mode) {
+        // gets the lastId of the current db, if db is empty, it will return a -1. first entry is 0
+        // mode 0 is link_to_id
+        // mode 1 is page_info
+        // mode 2 is word_to_id
+        // mode 3 is word_freq
+        RocksIterator iter;
+        if (mode == 0) {
+            iter = linkToId.newIterator();
+        }    
+        else if (mode == 1) {
+            iter = pageInfo.newIterator();
+        }
+        else if (mode == 2) {
+            iter = wordToId.newIterator();
+        }
+        else {
+            iter = wordFreq.newIterator();
+        }
         int id = -1;
         for(iter.seekToFirst(); iter.isValid(); iter.next()) {
             id++;
@@ -97,73 +243,65 @@ public class InvertedIndex
         return id;
     }
 
-    public int getPageId(RocksIterator iter) {
-        String result = (new String(iter.value())).replaceAll("doc ", "");
-        int id = Integer.parseInt(result);
-        return id;
+    public String getWordId(String word) {
+        // returns the word_id of a given word
+        // if word does not exist, it will return an empty string
+        String result = "";
+        try {
+            byte[] content = this.wordToId.get(word.getBytes());
+            if (content != null) {
+                result = new String(content);
+            }
+        }
+        catch(RocksDBException dbe)
+        {
+            System.err.println(dbe.toString());
+        }
+        return result;
     }
 
-    public void addEntry(String word, int x, int y) throws RocksDBException
-    {
-        // Add a "docX Y" entry for the key "word" into hashtable
-        // ADD YOUR CODES HERE
-        byte[] content = db.get(word.getBytes());
-        if (content == null) {
-            content = ("doc" + x + " " + y).getBytes();
-        } else {
-            content = (new String(content) + " doc" + x + " " + y).getBytes();
+    public String getPageId(String url) {
+        // for a given URL, get the url's pageID in link_to_id database
+        // will return empty string if does not exists
+        // will return "doc X" where X is the ID if link exists
+        String result = "";
+        try {
+            byte[] content = this.linkToId.get(url.getBytes());
+            if (content != null) {
+                result = new String(content);
+            }
+            return result;
         }
-        db.put(word.getBytes(), content);
+        catch(RocksDBException dbe)
+        {
+            System.err.println(dbe.toString());
+        }
+        return result;
     }
-    public void delEntry(String word) throws RocksDBException
-    {
-        // Delete the word and its list from the hashtable
-        // ADD YOUR CODES HERE
-        db.remove(word.getBytes());
-    } 
-    public void printAll() throws RocksDBException
+
+    public void printAll(int mode) throws RocksDBException
     {
         // Print all the data in the hashtable
-        // ADD YOUR CODES HERE
-        RocksIterator iter = db.newIterator();
-                    
+        // mode 0 = print link_to_id
+        // mode 1 = print page_info
+        // mode 2 = print word_to_id
+        // mode 3 = print word_freq
+        RocksIterator iter;
+        if (mode == 0) {
+            iter = linkToId.newIterator();
+        }    
+        else if (mode == 1) {
+            iter = pageInfo.newIterator();
+        }
+        else if (mode == 2) {
+            iter = wordToId.newIterator();
+        }
+        else {
+            iter = wordFreq.newIterator();
+        }
+
         for(iter.seekToFirst(); iter.isValid(); iter.next()) {
             System.out.println(new String(iter.key()) + "=" + new String(iter.value()));
-        }
-    }    
-    
-    public static void main(String[] args)
-    {
-        try
-        {
-            // a static method that loads the RocksDB C++ library.
-            RocksDB.loadLibrary();
-
-            // modify the path to your database
-            String path = "/Users/albertpare/Codes/searchEngine/assets/db";
-            
-            InvertedIndex index = new InvertedIndex(path);
-    
-            index.addEntry("cat", 2, 6);
-            index.addEntry("dog", 1, 33);
-            System.out.println("First print");
-            index.printAll();
-            
-            index.addEntry("cat", 8, 3);
-            index.addEntry("dog", 6, 73);
-            index.addEntry("dog", 8, 83);
-            index.addEntry("dog", 10, 5);
-            index.addEntry("cat", 11, 106);
-            System.out.println("Second print");
-            index.printAll();
-            
-            index.delEntry("dog");
-            System.out.println("Third print");
-            index.printAll();
-        }
-        catch(RocksDBException e)
-        {
-            System.err.println(e.toString());
         }
     }
 }

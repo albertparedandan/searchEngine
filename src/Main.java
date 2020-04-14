@@ -108,10 +108,16 @@ public class Main
 			BufferedReader crawled = new BufferedReader(new FileReader(read));
             FileWriter result = new FileWriter(name);
             String line;
+            int lineNum = 0;
                 while ((line = crawled.readLine()) != null) {
                     String[] words = line.split("\\s");
                     for (String w: words) {
-                        if (w.contains("http") || w.contains(":") || w.contains("-1")){
+                        if (lineNum % 5 == 0) {
+                            // parent URL
+                            result.write(w + "");
+                        }
+                        else if (w.contains("http") || w.contains(":") || w.contains("-1")){
+                            // child url
                             result.write(w + " ");
                         }
                         else if (stopStem.isStopWord(w))
@@ -121,6 +127,7 @@ public class Main
                         }
                     }
                     result.write("\n");
+                    lineNum++;
                 }
             result.flush();
             result.close();
@@ -131,8 +138,8 @@ public class Main
 		}
     }
     
-    public void storePages(String read) {
-       iIndex.parsePages(read); 
+    public void storePages(String read, String read2) {
+       iIndex.parsePages(read, read2); 
     }
 
 	public static void main(String[] arg)
@@ -140,6 +147,6 @@ public class Main
             Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", "/Users/albertpare/Codes/searchEngine/assets/db");
             main.crawl("assets/CrawledResults.txt");
             main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");			
-            main.storePages("assets/CrawledResults-StopStem.txt");
+            main.storePages("assets/CrawledResults-StopStem.txt", "assets/CrawledResults.txt");
 	}
 }

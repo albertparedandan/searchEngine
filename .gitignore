@@ -27,6 +27,10 @@ hs_err_pid*
 rocksdb-master/*
 htmlparser1_6/*
 lib/*
+assets/db/link_to_id/*
+assets/db/page_info/*
+assets/db/word_to_id/*
+assets/db/word_freq/*
 
 ### macOS ###
 # General
