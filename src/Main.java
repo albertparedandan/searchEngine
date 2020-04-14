@@ -122,7 +122,7 @@ public class Main
 					else{
 						String[] words = line.split("\\s");
 						for (String w: words) {
-                            if (lineNum % 6 = 0) {
+                            if (lineNum % 6 == 0) {
                                 // parent URL
                                 result.write(w + "");
                             }
@@ -137,6 +137,7 @@ public class Main
 						}
 						result.write("\n");
 					}   
+                lineNum++;
                 }
             result.flush();
             result.close();
