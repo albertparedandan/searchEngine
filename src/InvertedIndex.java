@@ -38,13 +38,13 @@ public class InvertedIndex
         this.linkToId(read);
         this.collectPageInfo(read2);
         this.parseTerms(read);
-        try{
-            //this.printAll(1);
-        }
-        catch(RocksDBException dbe)
-        {
-            System.err.println(dbe.toString());
-        }
+        //try{
+        //    //this.printAll(1);
+        //}
+        //catch(RocksDBException dbe)
+        //{
+        //    System.err.println(dbe.toString());
+        //}
     }
 
     public void linkToId(String read) {
