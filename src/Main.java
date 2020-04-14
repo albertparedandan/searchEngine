@@ -193,6 +193,7 @@ public class Main
 
 	public static void main(String[] arg) 
 	{         
+        // ADD YOUR DB_PATH HERE
 		final String DB_PATH= "/Users/albertpare/Codes/searchEngine/assets/db";
             Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", DB_PATH);
             main.crawl("assets/CrawledResults.txt");

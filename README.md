@@ -23,9 +23,9 @@ These instructions will help you get a local project on your machine to develop 
 5. move Porter.java files to "project_directory/IRUtilies" folder
 6. make sure to change `DB_PATH` to your base project directory in `Main.java`
 7. compile the .java files to classes directory
-`javac -cp lib/rocksdbjni-6.9.0-linux64.jar:classes:.:lib/htmlparser.jar -d classes src/*.java`
+`javac -cp lib/YOURROCKSDB.jar:classes:.:YOURHTMLPARSER.jar -d classes src/*.java`
 8. Run the Main
-`java -cp lib/htmlparser.jar:lib/rocksdbjni-6.9.0-linux64.jar:classes Main`
+`javac -cp lib/YOURROCKSDB.jar:classes:.:YOURHTMLPARSER.jar Main` 
 
 ## Database Schema
 * link_to_id
