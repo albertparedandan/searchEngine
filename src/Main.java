@@ -15,24 +15,63 @@ import org.rocksdb.RocksDBException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.HttpURLConnection;
+import org.rocksdb.RocksDB;
+import org.rocksdb.Options;
+import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
+
 
 public class Main
 {
     private Crawler crawler;
     private StopStem stopStem;
     private InvertedIndex iIndex;
+	private String dbPath;
 
 	public Main(String url, String stopwords, String db)
 	{
 		super();
         crawler = new Crawler(url);
 		stopStem = new StopStem(stopwords);
+		dbPath = db;
         try {
             iIndex = new InvertedIndex(db);
         }
         catch(RocksDBException dbe) {
             System.err.println(dbe.toString());
         }
+	}
+	
+	public void printResults(String name)
+	{
+		try {
+			FileWriter spider_results = new FileWriter(name);
+
+			for (int i = 1; i < 27; ++i){
+				String key = "doc " + i;
+				Vector<String> results = iIndex.test_drive(key);
+				spider_results.write(results.get(1) + "\n");
+				spider_results.write(results.get(2) + "\n");
+				spider_results.write(results.get(3) + ", " + results.get(4) + "\n");
+				String[] keywords = results.get(6).split(";", 0);
+				for(int j = 0; j < keywords.length; ++j){
+					spider_results.write(keywords[j] + "; ");
+				}
+				spider_results.write("\n");
+				String[] children = results.get(5).split(" ", 0);
+				for(int j = 0; j < children.length; ++j){
+					spider_results.write(children[j] + "\n");
+				}
+				spider_results.write("---------------------------------------------------------------------\n");
+			}
+			spider_results.flush();
+			spider_results.close();
+		}
+		
+		catch(IOException ioe)
+		{
+			System.err.println(ioe.toString());
+		}
 	}
 
     public void crawl(String name)
@@ -152,11 +191,13 @@ public class Main
        iIndex.parsePages(read, read2); 
     }
 
-	public static void main(String[] arg)
+	public static void main(String[] arg) 
 	{         
-            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", "/Users/albertpare/Codes/searchEngine/assets/db");
+		final String DB_PATH= "/home/npratama/searchEngine/rocksdb-master/db";
+            Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", DB_PATH);
             main.crawl("assets/CrawledResults.txt");
             main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");			
             main.storePages("assets/CrawledResults-StopStem.txt", "assets/CrawledResults.txt");
+			main.printResults("assets/spider_result.txt");
 	}
 }

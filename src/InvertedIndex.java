@@ -39,7 +39,7 @@ public class InvertedIndex
         this.collectPageInfo(read2);
         this.parseTerms(read);
         try{
-            //this.printAll(1);
+            this.printAll(3);
         }
         catch(RocksDBException dbe)
         {
@@ -119,6 +119,73 @@ public class InvertedIndex
         }
     }
 
+    public void getFirstDoc() 
+    {
+        String docId = this.getPageId("http://www.cse.ust.hk");
+    }
+
+    public Vector<String> test_drive(String key)
+    {
+        RocksIterator iter;
+        iter = pageInfo.newIterator();
+        Vector<String> results = new Vector<String>();
+        for(iter.seekToFirst(); iter.isValid(); iter.next()) 
+            {
+                String iter_key = new String(iter.key());
+
+                if (key.equals(iter_key)){
+                    // Get and print the content of each key
+                    String content = new String(iter.value()); 
+                    String[] arrOfStr = content.split(" ", 0);
+                        String url = arrOfStr[0];
+                        String title = "";
+                    int i = 0;
+                    for (i = 2; i < 15; ++i){
+                        if(arrOfStr[i].matches(".*\\d.*"))
+                        // if(!((arrOfStr[i] >= 'a' && arrOfStr[i] <= 'z') || (arrOfStr[i] >= 'A' && arrOfStr[i] <= 'Z')))
+                            break;
+                            // (s.matches(".*[a-z].*"))
+                        title += arrOfStr[i] + " ";
+                    }
+                        String page_size = arrOfStr[i];
+                        String last_modified = "";
+                    for (int j = i+1; j < i+7; ++j){
+                        last_modified += arrOfStr[j] + " ";
+                    }
+                    i = i + 7;
+                        String children = "";
+                    for (int j = i; j < arrOfStr.length; ++j) {
+                        children += arrOfStr[j] + " ";
+                    }
+                    
+                    results.add(iter_key);
+                    results.add(title);
+                    results.add(url);
+                    results.add(last_modified);
+                    results.add(page_size);
+                    results.add(children);
+                }                
+			}
+        iter = wordFreq.newIterator();
+        RocksIterator iterator = wordToId.newIterator();;
+        String wordsInDoc = "";
+        for(iter.seekToFirst(); iter.isValid(); iter.next()) {
+            String wordId = new String(iter.key());
+            int freq = getWordFreq(results.get(0), wordId);
+            if (freq > 0)
+                // iterator = wordToId.newIterator();
+                for(iterator.seekToFirst(); iterator.isValid(); iterator.next()) {
+                    String id = new String(iterator.value());
+                    if (wordId.equals(id)){
+                        String word = new String(iterator.key());
+                        wordsInDoc += word + " " + freq + "; ";
+                    }
+                }
+        }
+        results.add(wordsInDoc);
+        return results;
+    }
+    
     public void parseTerms(String read) {
         try {
             BufferedReader stemCrawled = new BufferedReader(new FileReader(read));
