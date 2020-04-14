@@ -47,7 +47,7 @@ public class Main
 		try {
 			FileWriter spider_results = new FileWriter(name);
 
-			for (int i = 1; i < 27; ++i){
+			for (int i = 0; i < 27; ++i){
 				String key = "doc " + i;
 				Vector<String> results = iIndex.getDocDetails(key);
 				spider_results.write(results.get(1) + "\n");
@@ -81,7 +81,7 @@ public class Main
 
 			// write data from the base url
 			Vector<String> words = crawler.extractWords();		
-			crawled.write(crawler.getUrl() + " :\n");
+			crawled.write(crawler.getUrl() + "\n");
 
 				// write the title page
 				crawled.write(crawler.getTitle() + "\n");
@@ -193,7 +193,7 @@ public class Main
 
 	public static void main(String[] arg) 
 	{         
-		final String DB_PATH= "/home/npratama/searchEngine/rocksdb-master/db";
+		final String DB_PATH= "/Users/albertpare/Codes/searchEngine/assets/db";
             Main main = new Main("http://www.cse.ust.hk", "assets/stopwords.txt", DB_PATH);
             main.crawl("assets/CrawledResults.txt");
             main.stopAndStem("assets/CrawledResults.txt", "assets/CrawledResults-StopStem.txt");			
