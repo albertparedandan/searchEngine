@@ -39,10 +39,7 @@ public class InvertedIndex
         this.collectPageInfo(read2);
         this.parseTerms(read);
         try{
-            byte[] content = this.wordFreq.get(("word 0").getBytes());
-            if (content != null) {
-                System.out.println(new String(content));
-            }
+            //this.printAll(1);
         }
         catch(RocksDBException dbe)
         {
