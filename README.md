@@ -26,7 +26,7 @@ These instructions will help you get a local project on your machine to develop 
 
 `javac -cp lib/htmlparser.jar -d classes src/Crawler.java`
 
-`javac -cp lib/htmlparser.jar:classes -d classes src/Main.java`
+`javac -cp lib/htmlparser.jar:lib/rocksdbjni-6.9.0-linux64.jar:classes -d classes src/Main.java`
 
 6. Run the Main
-`java -cp .:lib/htmlparser.jar:classes Main`
+`java -cp .:lib/htmlparser.jar:lib/rocksdbjni-6.9.0-linux64.jar:classes Main`
