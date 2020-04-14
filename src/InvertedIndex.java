@@ -38,13 +38,13 @@ public class InvertedIndex
         this.linkToId(read);
         this.collectPageInfo(read2);
         this.parseTerms(read);
-        try{
-            this.printAll(3);
-        }
-        catch(RocksDBException dbe)
-        {
-            System.err.println(dbe.toString());
-        }
+        // try{
+        //     this.printAll(3);
+        // }
+        // catch(RocksDBException dbe)
+        // {
+        //     System.err.println(dbe.toString());
+        // }
     }
 
     public void linkToId(String read) {
@@ -121,10 +121,14 @@ public class InvertedIndex
 
     public void getFirstDoc() 
     {
-        String docId = this.getPageId("http://www.cse.ust.hk");
+        RocksIterator iter;
+        iter = pageInfo.newIterator();
+        for(iter.seekToFirst(); iter.isValid(); iter.next()) {
+            System.out.println(new String(iter.value()));
+        }
     }
 
-    public Vector<String> test_drive(String key)
+    public Vector<String> getDocDetails(String key)
     {
         RocksIterator iter;
         iter = pageInfo.newIterator();

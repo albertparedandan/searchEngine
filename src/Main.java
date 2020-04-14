@@ -49,7 +49,7 @@ public class Main
 
 			for (int i = 1; i < 27; ++i){
 				String key = "doc " + i;
-				Vector<String> results = iIndex.test_drive(key);
+				Vector<String> results = iIndex.getDocDetails(key);
 				spider_results.write(results.get(1) + "\n");
 				spider_results.write(results.get(2) + "\n");
 				spider_results.write(results.get(3) + ", " + results.get(4) + "\n");
